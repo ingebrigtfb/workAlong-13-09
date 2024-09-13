@@ -15,16 +15,18 @@ const apiUrl = 'https://www.amiiboapi.com/api/amiibo/';
 // Send the API URL to the worker
 worker.postMessage(apiUrl);
 
+let amiiboData = [];
+
 // Listen for messages from the worker
 worker.onmessage = function(event) {
     const data = event.data;
     if (data.error) {
         console.error('Error fetching data:', data.error);
 return; }
-    // Log the processed data or display it on the page
-    console.log('Processed data:', data);
-    // Display the processed data on the page
-    displayData(data);
+    // Store the full data for filtering
+    amiiboData = data;
+    // Initially display the full list of amiibos
+    displayData(amiiboData);
 };
 
 // Function to display the processed data in the DOM
@@ -46,3 +48,16 @@ function displayData(data) {
         output.appendChild(div);
     });
 }
+
+// Add event listener for search input
+document.getElementById('search').addEventListener('input', function(event) {
+    const searchTerm = event.target.value.toLowerCase();
+    // Filter the amiibo data based on the search term
+    const filteredData = amiiboData.filter(amiibo =>
+        amiibo.name.toLowerCase().includes(searchTerm) ||
+        amiibo.gameSeries.toLowerCase().includes(searchTerm) ||
+        amiibo.amiiboSeries.toLowerCase().includes(searchTerm)
+);
+    // Display the filtered data
+    displayData(filteredData);
+});
